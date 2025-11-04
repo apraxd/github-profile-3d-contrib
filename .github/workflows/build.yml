@@ -2,37 +2,33 @@ name: Generate 3D Contribution Graph
 
 on:
   schedule:
-    - cron: "0 0 * * *"   # run once a day
+    - cron: "0 0 * * *"
   workflow_dispatch:
 
 permissions:
-  contents: write  # 👈 gives permission to push to repo
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-
-      - run: npm install
+      - run: npm ci
       - run: npm run build --if-present
-
-      - name: Generate profile 3D contribution graph
-        run: |
-          node ./dist/index.js --username apraxd --theme night-rainbow --output ./profile-3d-contrib/profile-night-rainbow.svg
+      - run: node ./dist/index.js --username apraxd --theme night-rainbow --output ./profile-3d-contrib/profile-night-rainbow.svg
 
       - name: Commit and push generated files
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ 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 }}   # 👈 use your PAT here
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add profile-3d-contrib/
           git commit -m "update 3D contribution graph" || echo "no changes"
           git push origin HEAD:main
+
 
 
