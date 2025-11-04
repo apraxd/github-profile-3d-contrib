@@ -3,49 +3,51 @@ name: Generate 3D Contribution Graph
 on:
   schedule:
     - cron: "0 0 * * *"   # Runs every day at midnight UTC
-  workflow_dispatch:       # Allows manual runs from the Actions tab
+  workflow_dispatch:       # Allows you to run it manually from the Actions tab
 
-# Give write permission to push the generated SVGs
+# Give the workflow permission to push files back to the repo
 permissions:
   contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      # Checkout the repo
+      # 1️⃣ Checkout your repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Setup Node.js (required for the generator)
+      # 2️⃣ Setup Node.js (the tool uses Node to generate SVGs)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      # Install dependencies
+      # 3️⃣ Install dependencies
       - name: Install dependencies
         run: npm ci
 
-      # (Optional) Build project if needed
+      # 4️⃣ Build the project (if needed)
       - name: Build project
         run: npm run build --if-present
 
-      # Generate the 3D contribution graph SVG
+      # 5️⃣ Generate the 3D contribution graph SVG
       - name: Generate 3D Contribution Graph
         run: |
           node ./dist/index.js --username apraxd --theme night-rainbow --output ./profile-3d-contrib/profile-night-rainbow.svg
 
-      # Commit and push the generated file to the repo
+      # 6️⃣ Commit and push the generated file to the main branch
       - name: Commit and push generated files
         env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}   # <- uses your repo secret
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}   # 👈 Make sure this secret exists in your repo
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add profile-3d-contrib/
           git commit -m "update 3D contribution graph" || echo "no changes"
           git push origin HEAD:main
+
 
 
 
