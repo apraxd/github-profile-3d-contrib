@@ -1,23 +1,34 @@
-name: Build and Commit
+name: Generate 3D Contribution Graph
 
 on:
+  schedule:
+    - cron: "0 0 * * *"   # run once a day at midnight UTC
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 20
+
       - run: npm install
-      - run: npm run build
-      - run: |
-          git config user.name github-actions
-          git config user.email github-actions[bot]@users.noreply.github.com
-          git add dist/
-          if git commit -m "Update build" ; then
-            git push origin HEAD:main
-          fi
+      - run: npm run build --if-present
+
+      - name: Generate profile 3D contribution graph
+        run: |
+          npm install
+          npm run build
+          node ./dist/index.js --username apraxd --theme night-rainbow --output ./profile-3d-contrib/profile-night-rainbow.svg
+
+      - name: Commit and push generated files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add profile-3d-contrib/
+          git commit -m "update 3D contribution graph" || echo "no changes"
+          git push origin HEAD:main
+
