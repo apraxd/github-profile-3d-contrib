@@ -3,9 +3,9 @@ name: Generate 3D Contribution Graph
 on:
   schedule:
     - cron: "0 0 * * *"   # Runs every day at midnight UTC
-  workflow_dispatch:       # Allows you to run it manually from the Actions tab
+  workflow_dispatch:       # Lets you run it manually from the Actions tab
 
-# Give the workflow permission to push files back to the repo
+# Give workflow permission to push files
 permissions:
   contents: write
 
@@ -14,11 +14,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout your repository
+      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Setup Node.js (the tool uses Node to generate SVGs)
+      # 2️⃣ Setup Node.js (required for generating SVGs)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -28,7 +28,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # 4️⃣ Build the project (if needed)
+      # 4️⃣ Build project (if applicable)
       - name: Build project
         run: npm run build --if-present
 
@@ -37,16 +37,17 @@ jobs:
         run: |
           node ./dist/index.js --username apraxd --theme night-rainbow --output ./profile-3d-contrib/profile-night-rainbow.svg
 
-      # 6️⃣ Commit and push the generated file to the main branch
+      # 6️⃣ Commit and push the generated SVG to main branch
       - name: Commit and push generated files
         env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}   # 👈 Make sure this secret exists in your repo
+          GITHUB_TOKEN: ${{ secrets.APRATIM_SECRET_KEY }}   # 👈 uses your secret name
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add profile-3d-contrib/
           git commit -m "update 3D contribution graph" || echo "no changes"
           git push origin HEAD:main
+
 
 
 
