@@ -22,7 +22,7 @@ jobs:
 
       - name: Commit and push generated files
         env:
-          GITHUB_TOKEN: ${{ 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 }}   # 👈 use your PAT here
+          GITHUB_TOKEN: ${{  }}   # 👈 use your PAT here
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
