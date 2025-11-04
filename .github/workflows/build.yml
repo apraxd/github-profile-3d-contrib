@@ -1,55 +1,34 @@
-name: Generate 3D Contribution Graph
+name: Build and Commit
 
 on:
   schedule:
-    - cron: "0 0 * * *"   # Runs every day at midnight UTC
-  workflow_dispatch:       # Lets you run it manually from the Actions tab
+    - cron: "0 0 * * *"   # optional – run daily
+  workflow_dispatch:
 
-# Give workflow permission to push files
 permissions:
-  contents: write
+  contents: write          # allow pushing commits
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repository
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      # 2️⃣ Setup Node.js (required for generating SVGs)
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 20
 
-      # 3️⃣ Install dependencies
-      - name: Install dependencies
-        run: npm ci
+      - run: npm ci
+      - run: npm run build
 
-      # 4️⃣ Build project (if applicable)
-      - name: Build project
-        run: npm run build --if-present
-
-      # 5️⃣ Generate the 3D contribution graph SVG
-      - name: Generate 3D Contribution Graph
-        run: |
-          node ./dist/index.js --username apraxd --theme night-rainbow --output ./profile-3d-contrib/profile-night-rainbow.svg
-
-      # 6️⃣ Commit and push the generated SVG to main branch
       - name: Commit and push generated files
         env:
-          GITHUB_TOKEN: ${{ secrets.APRATIM_SECRET_KEY }}   # 👈 uses your secret name
+          GITHUB_TOKEN: ${{ secrets.APRATIM_SECRET_KEY }}   # ← your secret name here
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add profile-3d-contrib/
-          git commit -m "update 3D contribution graph" || echo "no changes"
-          git push origin HEAD:main
-
-
-
-
-
-
+          git add dist/
+          if git commit -m "Update build" ; then
+            git push origin HEAD:main
+          fi
